@@ -1,3 +1,4 @@
+'use client'
 import {
   Dialog,
   DialogContent,
@@ -18,34 +19,53 @@ import LoadingButton from '@/components/ui/loading-button'
 import { Textarea } from '@/components/ui/textarea'
 import { CreateNoteSchema, createNoteSchema } from '@/lib/validation/note'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Note } from '@prisma/client'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 
-interface AddNoteDialogProps {
+interface AddEditNoteDialogProps {
   open: boolean
   setOpen: (open: boolean) => void
+  noteToEdit?: Note
 }
 
-function AddNoteDialog({ open, setOpen }: AddNoteDialogProps) {
+function AddEditNoteDialog({
+  open,
+  setOpen,
+  noteToEdit,
+}: AddEditNoteDialogProps) {
+  const [deleteInProgress, setDeleteInProgress] = useState(false)
   const router = useRouter()
 
   const form = useForm<CreateNoteSchema>({
     // validate schema
     resolver: zodResolver(createNoteSchema),
     defaultValues: {
-      title: '',
-      content: '',
+      title: noteToEdit?.title || '',
+      content: noteToEdit?.content || '',
     },
   })
 
   async function onSubmit(input: CreateNoteSchema) {
     try {
-      const response = await fetch('/api/notes', {
-        method: 'POST',
-        body: JSON.stringify(input),
-      })
-      if (!response.ok) throw Error('Status Code: " + response.status')
-      form.reset()
+      if (noteToEdit) {
+        const response = await fetch('/api/notes', {
+          method: 'PUT',
+          body: JSON.stringify({
+            id: noteToEdit.id,
+            ...input,
+          }),
+        })
+        if (!response.ok) throw Error('Status Code: ' + response.status)
+      } else {
+        const response = await fetch('/api/notes', {
+          method: 'POST',
+          body: JSON.stringify(input),
+        })
+        if (!response.ok) throw Error('Status Code: ' + response.status)
+        form.reset()
+      }
       router.refresh()
       setOpen(false)
     } catch (error) {
@@ -54,11 +74,35 @@ function AddNoteDialog({ open, setOpen }: AddNoteDialogProps) {
     }
   }
 
+  async function deleteNote() {
+    if (!noteToEdit) return
+    setDeleteInProgress(true)
+    try {
+      const response = await fetch('/api/notes', {
+        method: 'DELETE',
+        body: JSON.stringify({
+          id: noteToEdit.id,
+        }),
+      })
+
+      if (!response.ok) throw Error('Status code: ' + response.status)
+    } catch (error) {
+      console.error(error)
+      alert('Something went wrong, please try again.')
+    } finally {
+      setDeleteInProgress(false)
+      router.refresh()
+      setOpen(false)
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Note</DialogTitle>
+          <DialogTitle>
+            {noteToEdit ? 'Edit Note' : 'Add Note'}Add Note
+          </DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
@@ -88,12 +132,24 @@ function AddNoteDialog({ open, setOpen }: AddNoteDialogProps) {
                 </FormItem>
               )}
             />
-            <DialogFooter>
+            <DialogFooter className="gap-1 sm:gap-0">
+              {noteToEdit && (
+                <LoadingButton
+                  variant="destructive"
+                  loading={deleteInProgress}
+                  disabled={form.formState.isSubmitting}
+                  onClick={deleteNote}
+                  type="button"
+                >
+                  Delete
+                </LoadingButton>
+              )}
+
               <LoadingButton
                 loading={form.formState.isSubmitting}
                 type="submit"
               >
-                Submit
+                Add
               </LoadingButton>
             </DialogFooter>
           </form>
@@ -103,4 +159,4 @@ function AddNoteDialog({ open, setOpen }: AddNoteDialogProps) {
   )
 }
 
-export default AddNoteDialog
+export default AddEditNoteDialog
