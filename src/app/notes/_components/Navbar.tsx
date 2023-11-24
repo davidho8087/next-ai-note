@@ -2,6 +2,7 @@
 
 import logo from '@/assets/images/logo.png'
 import AddEditNoteDialog from '@/components/AddEditNoteDialog'
+import AiChatButton from '@/components/AiChatButton'
 import ThemeToggleButton from '@/components/ThemeToggleButton'
 import { Button } from '@/components/ui/button'
 import { UserButton } from '@clerk/nextjs'
@@ -21,7 +22,15 @@ function Navbar() {
       <div className="p-4 shadow">
         <div className="m-auto flex max-w-7xl items-center justify-between gap-1">
           <Link href={'/notes'} className="flex items-center gap-2">
-            <Image src={logo} alt="david logo" width={40} height={40} />
+            <Image
+              src={logo}
+              alt="david logo"
+              style={{
+                width: '40px',
+                height: 'auto',
+              }}
+              priority
+            />
             <span className="font-bold">Note</span>
           </Link>
 
@@ -42,6 +51,7 @@ function Navbar() {
               <Plus size={20} className="mr-2" />
               Add Note
             </Button>
+            <AiChatButton />
           </div>
         </div>
       </div>
