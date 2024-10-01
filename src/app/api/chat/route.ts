@@ -1,6 +1,6 @@
+import { getNotesIndex } from '@/lib/db/pinecone'
 // app/api/chat/route.ts
 
-import { notesIndex } from '@/lib/db/pinecone'
 import prisma from '@/lib/db/prisma'
 import { getEmbedding } from '@/lib/openai'
 import { auth } from '@clerk/nextjs'
@@ -18,6 +18,8 @@ export async function POST(req: Request) {
     // Extract the `messages` from the body of the request
     const body = await req.json()
     const messages: ChatCompletionMessage[] = body.messages
+
+    const notesIndex = await getNotesIndex()
 
     // I just want to send the last 6 messages to save token and narrow down
     // the search of recent topic that we chat about.
@@ -55,7 +57,7 @@ export async function POST(req: Request) {
     const systemMessage: ChatCompletionMessage = {
       role: 'assistant',
       content:
-        "You are an intelligent and smart note-taking-app. You answer user's question based on their existing notes." +
+        "You are an intelligent and smart info-taking-app. You answer user's question based on their existing notes." +
         'Also you can give your opinion, skills and knowledge relevant notes' +
         'The relevant notes for this query are: \n' +
         relevantNotes

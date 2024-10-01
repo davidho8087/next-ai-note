@@ -1,4 +1,4 @@
-import { notesIndex } from '@/lib/db/pinecone'
+import { getNotesIndex } from '@/lib/db/pinecone'
 import prisma from '@/lib/db/prisma'
 import { getEmbedding } from '@/lib/openai'
 import {
@@ -13,6 +13,9 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const validation = createNoteSchema.safeParse(body)
+
+    // Get the Pinecone index (ensure the index exists or create it if not)
+    const notesIndex = await getNotesIndex()
 
     if (!validation.success) {
       console.error(validation.error)
@@ -60,6 +63,7 @@ export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
     const validation = updateNoteSchema.safeParse(body)
+    const notesIndex = await getNotesIndex()
 
     if (!validation.success) {
       console.error(validation.error)
@@ -115,6 +119,7 @@ export async function DELETE(req: NextRequest) {
   try {
     const body = await req.json()
     const validation = deleteNoteSchema.safeParse(body)
+    const notesIndex = await getNotesIndex()
 
     if (!validation.success) {
       console.error(validation.error)

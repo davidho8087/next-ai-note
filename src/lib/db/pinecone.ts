@@ -1,14 +1,37 @@
-import { Pinecone } from '@pinecone-database/pinecone'
+// lib/db/pinecone.ts
 
-const apiKey = process.env.PINECONE_API_KEY
+import {
+  Pinecone,
+  type PineconeConfiguration,
+} from '@pinecone-database/pinecone'
 
-if (!apiKey) {
-  throw Error('PINE-CONE API is not set')
+const config: PineconeConfiguration = {
+  apiKey: process.env.PINECONE_API_KEY ?? '',
 }
 
-const pinecone = new Pinecone({
-  environment: 'gcp-starter',
-  apiKey,
-})
+const pc = new Pinecone(config)
 
-export const notesIndex = pinecone.Index('nextjs-ai-note-app')
+export async function getNotesIndex() {
+  try {
+    const indexName = 'david-note' // Your index name
+
+    // Check if the index exists
+    const existingIndexes = await pc.listIndexes()
+    if (existingIndexes.indexes) {
+      for (const index of existingIndexes.indexes) {
+        console.log(`Checking index "${index.name}"...`)
+        if (index.name === indexName) {
+          console.log(`Index "${indexName}" exists. Returning it.`)
+          return pc.index(indexName)
+        }
+      }
+    }
+
+    // If the index doesn't exist, create it
+    console.log(`Index "${indexName}" does not exist. Creating it now...`)
+    return pc.index(indexName)
+  } catch (error) {
+    console.error('Error getting or creating notes index:', error)
+    throw error
+  }
+}
