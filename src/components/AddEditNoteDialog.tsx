@@ -98,11 +98,9 @@ function AddEditNoteDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent>
+      <DialogContent className="w-[90vw] max-w-3xl">
         <DialogHeader>
-          <DialogTitle>
-            {noteToEdit ? 'Edit Note' : 'Add Note'}Add Note
-          </DialogTitle>
+          <DialogTitle>{noteToEdit ? 'Edit Stuff' : 'Add Stuff'}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
@@ -126,7 +124,11 @@ function AddEditNoteDialog({
                 <FormItem>
                   <FormLabel>Content</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Content" {...field} />
+                    <Textarea
+                      placeholder="Content"
+                      {...field}
+                      className="h-96"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -149,7 +151,7 @@ function AddEditNoteDialog({
                 loading={form.formState.isSubmitting}
                 type="submit"
               >
-                Add
+                {noteToEdit ? 'Update' : 'Add'}
               </LoadingButton>
             </DialogFooter>
           </form>

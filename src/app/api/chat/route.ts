@@ -1,13 +1,10 @@
 import { getNotesIndex } from '@/lib/db/pinecone'
-// app/api/chat/route.ts
-
 import prisma from '@/lib/db/prisma'
 import { getEmbedding } from '@/lib/openai'
 import { auth } from '@clerk/nextjs'
 import { OpenAIStream, StreamingTextResponse } from 'ai'
 import { NextResponse } from 'next/server'
 import { OpenAI } from 'openai'
-import { ChatCompletionMessage } from 'openai/resources/index.mjs'
 
 // export const runtime = 'edge'
 
@@ -17,7 +14,9 @@ export async function POST(req: Request) {
   try {
     // Extract the `messages` from the body of the request
     const body = await req.json()
-    const messages: ChatCompletionMessage[] = body.messages
+    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = body.messages
+
+    console.log('messages', messages)
 
     const notesIndex = await getNotesIndex()
 
@@ -54,11 +53,15 @@ export async function POST(req: Request) {
 
     console.log('relevantNotes', relevantNotes)
 
-    const systemMessage: ChatCompletionMessage = {
+    const systemMessage: OpenAI.Chat.ChatCompletionMessageParam = {
       role: 'assistant',
       content:
-        "You are an intelligent and smart info-taking-app. You answer user's question based on their existing notes." +
-        'Also you can give your opinion, skills and knowledge relevant notes' +
+        'You are an AI assistant that generates SQL queries based on user requests' +
+        'Provide only the SQL statement.' +
+        'Ensure the SQL query is correct and follows best practices.' +
+        'Use standard PostgreSQL syntax.' +
+        'Do not include any explanatory text or additional commentary.' +
+        'Do not make any assumptions about the schema beyond what is provided.' +
         'The relevant notes for this query are: \n' +
         relevantNotes
           .map((note) => `Title: ${note.title}\nContent:\n${note.content}`)
@@ -73,7 +76,7 @@ export async function POST(req: Request) {
 
     // Request the OpenAI API for the response based on the prompt
     const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o-mini',
       stream: true,
       messages: [systemMessage, ...messagesTruncated],
     })

@@ -1,7 +1,6 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { useUser } from '@clerk/nextjs'
 import { Message } from 'ai'
@@ -9,6 +8,7 @@ import { useChat } from 'ai/react'
 import { Bot, Trash, XCircle } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useRef } from 'react'
+import { Textarea } from './ui/textarea'
 
 interface AiChatBotProps {
   open: boolean
@@ -26,8 +26,8 @@ function AiChatBot({ open, onClose }: AiChatBotProps) {
     error,
   } = useChat()
 
-  const inputRef = useRef<HTMLInputElement>(null)
-  const scrollRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -53,7 +53,7 @@ function AiChatBot({ open, onClose }: AiChatBotProps) {
       <button onClick={onClose} className="mb-1 ms-auto block">
         <XCircle size={30} />
       </button>
-      <div className="flex h-[600px] flex-col rounded border bg-background shadow-xl">
+      <div className="flex h-[1024px] flex-col rounded border bg-background shadow-xl">
         <div className="mt-3 h-full overflow-y-auto px-3" ref={scrollRef}>
           {messages.map((message) => (
             <ChatMessage message={message} key={message.id} />
@@ -81,7 +81,7 @@ function AiChatBot({ open, onClose }: AiChatBotProps) {
             </div>
           )}
         </div>
-        <form onSubmit={handleSubmit} className="m-3 flex gap-1">
+        <form onSubmit={handleSubmit} className="m-3 flex gap-3">
           <Button
             title="Clear"
             variant="outline"
@@ -92,11 +92,13 @@ function AiChatBot({ open, onClose }: AiChatBotProps) {
           >
             <Trash />
           </Button>
-          <Input
+          <Textarea
             value={input}
             onChange={handleInputChange}
             placeholder="say something..."
             ref={inputRef}
+            className="h-40 resize-none"
+            style={{ overflow: 'auto' }}
           />
 
           <Button type="submit">Send</Button>

@@ -31,7 +31,7 @@ function Navbar() {
               }}
               priority
             />
-            <span className="font-bold">Note</span>
+            <span className="font-bold">Info Dumper</span>
           </Link>
 
           {/*group*/}
@@ -49,7 +49,7 @@ function Navbar() {
             <ThemeToggleButton />
             <Button onClick={() => setShowAddEditNoteDialog(true)}>
               <Plus size={20} className="mr-2" />
-              Add Note
+              Add Stuff
             </Button>
             <AiChatButton />
           </div>

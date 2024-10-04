@@ -5,7 +5,7 @@ import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
 export const metadata: Metadata = {
-  title: 'David - Notes',
+  title: 'David - Dumpter',
 }
 
 export default async function NotePage() {
@@ -14,7 +14,6 @@ export default async function NotePage() {
   if (!userId) redirect('/sign-in')
 
   const allNotes = await prisma.note.findMany({ where: { userId } })
-  console.log('allNotes', allNotes)
 
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -23,7 +22,7 @@ export default async function NotePage() {
       ))}
       {allNotes.length === 0 && (
         <div className="col-span-full text-center">
-          {"You don't have any notes yet."}
+          {"You don't have any dumping yet."}
         </div>
       )}
     </div>

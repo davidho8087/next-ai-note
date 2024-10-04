@@ -139,7 +139,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
     }
 
-    const embedding = await getEmbeddingForNotes(body.title, body.content)
+    // const embedding = await getEmbeddingForNotes(body.title, body.content)
 
     // Transaction
     await prisma.$transaction(async (tx) => {
@@ -161,5 +161,5 @@ async function getEmbeddingForNotes(
   title: string,
   content: string | undefined,
 ) {
-  return getEmbedding(title + '\n\n' + content ?? '')
+  return getEmbedding(title + '\n\n' + (content ?? ''))
 }

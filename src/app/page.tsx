@@ -15,12 +15,12 @@ export default function Home() {
       <div className="flex items-center gap-4">
         {/*<Image src={logo} alt="logo" width={100} height={100} />*/}
         <span className="text-4xl font-extrabold -tracking-tight lg:text-5xl">
-          Note Taker
+          Information Search Tools with AI
         </span>
       </div>
       <p className="max-w-prose text-center">
-        An Intelligent note tracking app with AI, build with Next.js, Pine.come,
-        Shad-cn Clerk and more
+        AI build with Next.js, Store information in Pinecone for similarity
+        search, and Clerk for Authentication.
       </p>
       <Button size="lg" asChild>
         <Link href="/notes">Open</Link>
