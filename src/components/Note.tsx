@@ -3,7 +3,6 @@
 import AddEditNoteDialog from '@/components/AddEditNoteDialog'
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -37,10 +36,11 @@ function Note({ note }: NoteProps) {
             {createdUpdatedTimestamp}
             {wasUpdated && ' (updated)'}
           </CardDescription>
+          <CardDescription>{note.subTitle}</CardDescription>
         </CardHeader>
-        <CardContent>
+        {/* <CardContent>
           <p className="whitespace-pre-line">{note.content}</p>
-        </CardContent>
+        </CardContent> */}
       </Card>
       <AddEditNoteDialog
         open={showEditDialog}

@@ -17,12 +17,20 @@ import {
 import { Input } from '@/components/ui/input'
 import LoadingButton from '@/components/ui/loading-button'
 import { Textarea } from '@/components/ui/textarea'
+import { categoryOptions } from '@/lib/mock/metaData'
 import { CreateNoteSchema, createNoteSchema } from '@/lib/validation/note'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Note } from '@prisma/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select'
 
 interface AddEditNoteDialogProps {
   open: boolean
@@ -43,25 +51,29 @@ function AddEditNoteDialog({
     resolver: zodResolver(createNoteSchema),
     defaultValues: {
       title: noteToEdit?.title || '',
+      metadata: noteToEdit?.metadata || '',
+      subTitle: noteToEdit?.subTitle || '',
       content: noteToEdit?.content || '',
     },
   })
 
   async function onSubmit(input: CreateNoteSchema) {
+    const noteData = input
+
     try {
       if (noteToEdit) {
         const response = await fetch('/api/notes', {
           method: 'PUT',
           body: JSON.stringify({
             id: noteToEdit.id,
-            ...input,
+            ...noteData,
           }),
         })
         if (!response.ok) throw Error('Status Code: ' + response.status)
       } else {
         const response = await fetch('/api/notes', {
           method: 'POST',
-          body: JSON.stringify(input),
+          body: JSON.stringify(noteData),
         })
         if (!response.ok) throw Error('Status Code: ' + response.status)
         form.reset()
@@ -109,9 +121,9 @@ function AddEditNoteDialog({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Note Title</FormLabel>
+                  <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="Title" {...field} />
+                    <Input placeholder="" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -119,16 +131,51 @@ function AddEditNoteDialog({
             />
             <FormField
               control={form.control}
+              name="subTitle"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* Select for Intents */}
+            <FormField
+              control={form.control}
+              name="metadata"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Select Metadata</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger id="metaData">
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {categoryOptions.map((item) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="content"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Content</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Content"
-                      {...field}
-                      className="h-96"
-                    />
+                    <Textarea placeholder="" {...field} className="h-96" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

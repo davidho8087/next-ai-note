@@ -12,9 +12,11 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
+    console.log('body', body)
     const validation = createNoteSchema.safeParse(body)
+    // return true
 
-    // Get the Pinecone index (ensure the index exists or create it if not)
+    // // Get the Pinecone index (ensure the index exists or create it if not)
     const notesIndex = await getNotesIndex()
 
     if (!validation.success) {
@@ -27,23 +29,37 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
     }
 
-    const embedding = await getEmbeddingForNotes(body.title, body.content)
+    const embedding = await getEmbeddingForNotes(
+      body.title,
+      body.subTitle,
+      body.content,
+    )
 
     // Transaction
     const noteResult = await prisma.$transaction(async (tx) => {
       const note = await tx.note.create({
         data: {
           title: body.title,
+          subTitle: body.subTitle,
           content: body.content,
+          metadata: body.metadata,
           userId,
         },
       })
+
+      console.log('userId onCreate', userId)
+
+      console.log('metadata onCreate', body.metadata)
+
+      const fetchResult = await notesIndex.fetch(['67062a97e86c48580892ae00'])
+
+      console.log('fetchResult', fetchResult)
 
       await notesIndex.upsert([
         {
           id: note.id,
           values: embedding,
-          metadata: { userId },
+          metadata: { user: userId, category: body.metadata },
         },
       ])
       return note
@@ -70,7 +86,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid Input' }, { status: 400 })
     }
 
-    const { id, title, content } = body
+    const { id, title, subTitle, content, metadata } = body
 
     const note = await prisma.note.findUnique({ where: { id } })
 
@@ -83,7 +99,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
     }
 
-    const embedding = await getEmbeddingForNotes(body.title, body.content)
+    const embedding = await getEmbeddingForNotes(title, subTitle, content)
 
     // Transaction
     const updatedNoteResult = await prisma.$transaction(async (tx) => {
@@ -91,15 +107,19 @@ export async function PUT(req: NextRequest) {
         where: { id },
         data: {
           title,
+          subTitle,
           content,
+          metadata,
         },
       })
+
+      console.log('metadata onUpdate', metadata)
 
       await notesIndex.upsert([
         {
           id,
           values: embedding,
-          metadata: { userId },
+          metadata: { userId, category: metadata },
         },
       ])
       return updatedNote
@@ -159,6 +179,7 @@ export async function DELETE(req: NextRequest) {
 
 async function getEmbeddingForNotes(
   title: string,
+  subTitle: string | undefined,
   content: string | undefined,
 ) {
   return getEmbedding(title + '\n\n' + (content ?? ''))
